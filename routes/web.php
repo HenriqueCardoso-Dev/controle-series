@@ -1,18 +1,14 @@
 <?php
 
+use App\Http\Controllers\SeasonsController;
+use App\Http\Controllers\SeriesController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
-Route::get('/', function () {
-    return view('welcome');
+Route::prefix('/series')->group(function () {
+  Route::get('/', [SeriesController::class, 'index'])->name('series.index');
+  Route::get('/create', [SeriesController::class, 'create'])->name('series.create');
+  Route::post('/create', [SeriesController::class, 'store'])->name('series.store');
+  Route::delete('/delete/{id}', [SeriesController::class, 'destroy'])->name('series.delete');
+  
+  Route::get('/{serieId}', [SeasonsController::class, 'index'])->name('serie.index');
 });
