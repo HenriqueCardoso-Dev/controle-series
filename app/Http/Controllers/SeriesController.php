@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SeriesFormRequest;
 use App\Models\Season;
 use App\Models\Serie;
+use App\Services\SerieRemover;
+use App\Services\SeriesGenerator;
 use Illuminate\Http\Request;
 
 class SeriesController extends Controller
@@ -28,23 +30,9 @@ class SeriesController extends Controller
         return view('series.create');
     }
 
-    public function store(SeriesFormRequest $request)
+    public function store(SeriesFormRequest $request, SeriesGenerator $generator)
     {
-        $serie = Serie::create([
-            'name' => $request->serieName,
-        ]);
-
-        for ($i = 1; $i <= $request->qtdSeasons; $i++) {
-            $season = $serie->seasons()->create([
-                'season_number' => $i
-            ]);
-
-            for ($j = 1; $j <= $request->qtdChapters; $j++) {
-                $season->chapters()->create([
-                    'chapter_number' => $j
-                ]);
-            }
-        }
+        $serie = $generator->builder($request->serieName, $request->qtdSeasons, $request->qtdChapters);
 
         if ($serie != null) {
             $request->session()->flash('successResponse', "A série {$serie->name} foi adicionada em sua lista");
@@ -55,10 +43,10 @@ class SeriesController extends Controller
         return redirect()->route('series.index');
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request, SerieRemover $remover)
     {
-        Serie::destroy($request->id);
-        $request->session()->flash('successResponse', 'Série removida com sucesso!');
+        $serieName = $remover->remove($request->id);
+        $request->session()->flash('successResponse', "Série {$serieName} removida com sucesso!");
         return redirect()->route('series.index');
     }
 }
